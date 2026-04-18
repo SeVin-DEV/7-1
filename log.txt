@@ -1,0 +1,264 @@
+KAYDEN SYSTEM — DEVELOPMENT LOG & ARCHITECTURE MAP
+ ==================================================
+ 
+ [CORE PRINCIPLE]
+ The system is designed as a modular cognitive architecture:
+ - Engine = cognition (brain)
+ - Main = routing + infrastructure (nervous system)
+ - Bridges = execution layer (hands/tools)
+ - Kayden.sh = bootloader / hardware manager
+ 
+ 
+ ==================================================
+ [ARCHITECTURE OVERVIEW]
+ ==================================================
+ 
+ FLOW:
+ User Input
+   → main.py (/chat endpoint)
+   → engine.py (cognitive loop)
+   → tools_bus / patches_bus (execution)
+   → engine.py (reflection + response)
+   → main.py (return to user)
+ 
+ 
+ ==================================================
+ [COMPLETED COMPONENTS]
+ ==================================================
+ 
+ ✔ core/engine.py (v4.0 COMPLETE)
+ - Full cognitive loop (think → act → observe → repeat)
+ - Tool + shell execution integrated
+ - Argument parsing implemented
+ - Belief system injected into reasoning
+ - Persistence read + write active
+ - Defines system-wide execution contracts
+ 
+ ✔ main.py (FINALIZED INFRASTRUCTURE)
+ - Loads .env configuration
+ - Initializes LLM client (OpenAI-compatible)
+ - Mounts tool + patch buses dynamically
+ - Provides /chat and /health endpoints
+ - No longer contains any cognition or tool logic
+ 
+ 
+ ==================================================
+ [SYSTEM CONTRACTS (CRITICAL)]
+ ==================================================
+ 
+ ENGINE EXPECTS:
+ 
+ 1. tools_bus:
+    call(tool_name: str, args: dict) → str
+ 
+ 2. patches_bus:
+    call(command: str) → str
+ 
+ 3. manual_manager:
+    audit_tool_specs(tool_name) → (dict, "SUCCESS") or (None, "FAIL")
+ 
+ 4. persistence:
+    load_json(path, default)
+    save_json(path, data)
+    get_identity_content(file)
+ 
+ 
+ ALL TOOLS MUST FOLLOW:
+ def run(args: dict)
+ 
+ 
+ ==================================================
+ [ENV CONFIGURATION]
+ ==================================================
+ 
+ Required:
+ - MODEL_NAME
+ 
+ Optional (but typical):
+ - API_KEY
+ - API_BASE_URL
+ 
+ System supports:
+ - OpenAI
+ - Local LLMs (LM Studio, Ollama via proxy)
+ - Custom endpoints
+ 
+ No code changes required to swap models.
+ 
+ 
+ ==================================================
+ [CURRENT SYSTEM STATE]
+ ==================================================
+ 
+ Engine: COMPLETE
+ Main: COMPLETE
+ 
+ Remaining:
+ - tools/tools_bridge.py → needs normalization to args-based calls
+ - individual tools → must be updated to run(args)
+ - patches/patches_bridge.py → verify shell execution stability
+ - manual files (.md) → ensure correct tool usage instructions
+ 
+ 
+ ==================================================
+ [KNOWN RISKS / NEXT BREAKPOINTS]
+ ==================================================
+ 
+ 1. Tool argument mismatch (HIGH probability)
+ 2. Missing or malformed tool manuals
+ 3. Bridge call signature inconsistencies
+ 4. Shell execution edge cases
+ 
+ 
+ ==================================================
+ [NEXT STEPS]
+ ==================================================
+ 
+ 1. Finalize tools_bridge.py
+ 2. Normalize all tool interfaces
+ 3. Verify persistence integrity
+ 4. Test full loop:
+    - tool call
+    - shell call
+    - memory retention
+ 
+ 
+ ==================================================
+ [NOTES]
+ ==================================================
+ 
+ - Engine is now the authoritative control layer.
+ - Main must remain logic-free.
+ - Do not reintroduce tool handling into main.py.
+ - Any new capability should integrate through engine contracts.
+ 
+ 
+ ==================================================
+ [CHANGE LOG]
+ ==================================================
+ 
+ [2026:04:18;10:27:00] — Engine v4 implemented (full cognitive loop)
+ [2026:04:18;11:14:00] — Main.py refactored to infrastructure-only
+==================================================
+ 
+NEW
+COMPONENT UPDATE: start.sh (formerly kayden.sh)
+ 
+ SUMMARY:
+ The system bootloader script has been finalized and standardized under the name start.sh. This script functions as the primary system orchestration layer responsible for bootstrapping, environment preparation, plugin registration, Git synchronization, kernel execution, and lifecycle management.
+ 
+ The renaming from kayden.sh to start.sh is intended to clarify system entrypoint behavior while preserving internal identity branding within logs and runtime output.
+ 
+ No changes were made to engine or kernel logic during this update.
+ 
+ ⸻
+ 
+ ==================================================
+ CORE RESPONSIBILITIES OF start.sh
+ 
+ 1. SYSTEM BOOTSTRAP
+ 
+ * Loads system environment implicitly via runtime context
+ * Prepares execution environment for main.py kernel launch
+ 
+ 2. PLUGIN / TOOL / PATCH SCANNING (PnP SYSTEM)
+ 
+ * Scans /tools and /patches directories
+ * Builds active runtime manifests:
+     * SVN_ACTIVE_TOOLS
+     * SVN_ACTIVE_PATCHES
+ * Exports manifests into environment for kernel access
+ 
+ 3. GIT REPOSITORY STATE MANAGEMENT
+ 
+ * Fetches latest remote state
+ * Detects repository status:
+     * CLEAN
+     * AHEAD
+     * BEHIND
+     * DIVERGED
+ * Prompts user for sync decision with timeout fallback
+ * Supports:
+     * pull
+     * push
+     * skip (default on timeout)
+ 
+ 4. KERNEL INITIALIZATION
+ 
+ * Launches FastAPI kernel via:
+     * python3 main.py
+ * Passes environment state into runtime system
+ 
+ 5. MEMORY AND STATE VAULTING
+     After kernel shutdown or crash:
+ 
+ * Commits persistent memory data:
+     * identity/
+     * state/
+     * notes/
+ * Pushes to main branch if changes detected
+ 
+ 6. EXPERIMENTAL CODE VAULTING
+ 
+ * Switches to staging branch
+ * Commits all code changes as snapshot
+ * Pushes staging updates independently of main memory branch
+ 
+ 7. AUTO-RESTART LOOP
+ 
+ * System runs in continuous cycle
+ * On crash or exit:
+     * logs event
+     * performs vault operations
+     * restarts after delay (5 seconds)
+ 
+ ⸻
+ 
+ ==================================================
+ SYSTEM ROLE DEFINITION
+ 
+ start.sh acts as:
+ 
+ * BIOS / bootloader layer
+ * Git synchronization controller
+ * Plugin discovery system
+ * Runtime environment injector
+ * Kernel launcher (main.py)
+ * Crash recovery loop manager
+ * System lifecycle orchestrator
+ 
+ It does NOT:
+ 
+ * perform cognition
+ * execute tools
+ * handle LLM logic
+ * modify engine behavior
+ 
+ ⸻
+ 
+ ==================================================
+ KNOWN BEHAVIOR NOTES
+ 
+ * Git sync is user-assisted with timeout fallback
+ * Plugin scanning is dynamic at each boot cycle
+ * System runs in perpetual restart loop unless manually interrupted
+ * Failures are logged to terminal output (non-silent)
+ * Branch separation maintained:
+     * main → memory + stable state
+     * staging → experimental code snapshots
+ 
+ ⸻
+ 
+ ==================================================
+ STATUS
+ 
+ ✔ start.sh: ACTIVE AND FUNCTIONAL
+ ✔ engine.py: FINALIZED (v4 cognitive loop)
+ ✔ main.py: FINALIZED (infrastructure layer)
+ ✔ system architecture: STABLE MODULAR STACK
+
+  ================================================>
+  [CHANGE LOG]
+  ================================================>
+  
+  [2026:04:18;13:08:00] — start.sh implimented (formerly named kayden.sh))
