@@ -1,4 +1,4 @@
-import os
+ import os
  import json
  from core.persistence import get_identity_content, load_json, save_json
  from core.manual_manager import audit_tool_specs
